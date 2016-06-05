@@ -1,40 +1,52 @@
 package db
 
-import "gopkg.in/mgo.v2"
+import (
+	"gopkg.in/mgo.v2"
+	"sync"
+)
 
 type Mongo struct {
-	session *mgo.Session
-	database *mgo.Database
+	Session *mgo.Session
 }
+
+var (
+	database	*mgo.Database
+	once		sync.Once
+)
 
 func NewMgo(database,username,password string, addr ...string) *Mongo {
 	m := new(Mongo)
+	once.Do(func() { // 只执行一次
 
-	info := &mgo.DialInfo{
-		Database: database,
-		Username: username,
-		Password: password,
-		Addrs: addr,
-	}
+		info := &mgo.DialInfo{
+			Database: database,
+			Username: username,
+			Password: password,
+			Addrs: addr,
+		}
 
-	session, err := mgo.DialWithInfo(info)
-	if err != nil {
-		panic(err)
-	}
+		session, err := mgo.DialWithInfo(info)
+		if err != nil {
+			panic(err)
+		}
 
-	m.session = session.Clone()
+		m.Session = session.Clone()
+	})
+
 
 	return m
 
 }
 
-func (m *Mongo) C(name string) *mgo.Collection {
-	collection := m.database.With(m.session).C(name)
+func (m *Mongo) C(name string) (*mgo.Session, *mgo.Collection) {
+	Collection := database.With(m.Session).C(name)
 
-	return collection
-
+	return m.Session, Collection
 }
 
 func (m *Mongo) Close() {
-	m.session.Close()
+	m.Session.Close()
 }
+
+
+
