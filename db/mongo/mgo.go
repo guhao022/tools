@@ -4,6 +4,8 @@ import (
 	"gopkg.in/mgo.v2"
 	"sync"
 	"fmt"
+	"os"
+	"time"
 )
 
 var (
@@ -22,6 +24,23 @@ func Connect(host string) error {
 
 	return nil
 }
+
+/*func Connect() *mgo.Session {
+	info := *mgo.DialInfo{
+		Addrs:[]string(os.Getenv("MGO_HOST")),
+		Username: os.Getenv("MGO_USERNAME"),
+		Password: os.Getenv("MGO_PASSWORD"),
+		Timeout: 60 * time.Second,
+	}
+	s, err := mgo.DialWithInfo(info)
+	if err != nil {
+		panic(err)
+	}
+
+	session = s.Clone()
+
+	return session
+}*/
 
 /**
  * 公共方法，获取session，如果存在则拷贝一份
